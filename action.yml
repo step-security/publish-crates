@@ -1,0 +1,40 @@
+name: 'publish crates'
+description: 'Publish Rust crates on crates.io'
+author: 'step-security'
+branding:
+  icon: box
+  color: orange
+inputs:
+  token:
+    description: 'Github API token'
+    default: ${{ github.token }}
+  path:
+    description: 'Path to Rust crate or workspace'
+    default: '.'
+  args:
+    description: 'Extra arguments for cargo publish'
+    default: ''
+  registry-token:
+    description: 'Cargo registry token'
+    default: ''
+  dry-run:
+    description: 'Skip execution cargo publish'
+    default: 'false'
+  check-repo:
+    description: 'Check repository consistency'
+    default: 'true'
+  publish-delay:
+    description: 'Extra post publish delay (milliseconds)'
+    default: 0
+  no-verify:
+    description: 'Disable cargo publish validation and cyclic dependency checks'
+    default: 'false'
+  ignore-unpublished-changes:
+    description: 'Exit the workflow gracefully if package does not have a new version to publish'
+    default: 'false'
+outputs:
+  published:
+    description: 'JSON formatted string with published crates as list of objects with `name` and `version` fields'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
