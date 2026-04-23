@@ -204,6 +204,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
 const core_1 = __nccwpck_require__(2186);
 const exec_1 = __nccwpck_require__(1514);
 const package_1 = __nccwpck_require__(2536);
@@ -211,25 +212,46 @@ const crates_1 = __nccwpck_require__(90);
 const github_1 = __nccwpck_require__(5928);
 const utils_1 = __nccwpck_require__(918);
 const axios_1 = __importStar(__nccwpck_require__(8757));
+const fs = __importStar(__nccwpck_require__(7147));
 function getIntegerInput(name) {
     const value = parseInt((0, core_1.getInput)(name));
     return isNaN(value) ? undefined : value;
 }
 function validateSubscription() {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const API_URL = `https://agent.api.stepsecurity.io/v1/github/${process.env.GITHUB_REPOSITORY}/actions/subscription`;
+        const eventPath = process.env.GITHUB_EVENT_PATH;
+        let repoPrivate;
+        if (eventPath && fs.existsSync(eventPath)) {
+            const eventData = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
+            repoPrivate = (_a = eventData === null || eventData === void 0 ? void 0 : eventData.repository) === null || _a === void 0 ? void 0 : _a.private;
+        }
+        const upstream = 'katyo/publish-crates';
+        const action = process.env.GITHUB_ACTION_REPOSITORY;
+        const docsUrl = 'https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions';
+        core.info('');
+        core.info('[1;36mStepSecurity Maintained Action[0m');
+        core.info(`Secure drop-in replacement for ${upstream}`);
+        if (repoPrivate === false)
+            core.info('[32m✓ Free for public repositories[0m');
+        core.info(`[36mLearn more:[0m ${docsUrl}`);
+        core.info('');
+        if (repoPrivate === false)
+            return;
+        const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
+        const body = { action: action || '' };
+        if (serverUrl !== 'https://github.com')
+            body.ghes_server = serverUrl;
         try {
-            yield axios_1.default.get(API_URL, { timeout: 3000 });
+            yield axios_1.default.post(`https://agent.api.stepsecurity.io/v1/github/${process.env.GITHUB_REPOSITORY}/actions/maintained-actions-subscription`, body, { timeout: 3000 });
         }
         catch (err) {
-            if ((0, axios_1.isAxiosError)(err) && ((_a = err.response) === null || _a === void 0 ? void 0 : _a.status) === 403) {
-                (0, core_1.error)('Subscription is not valid. Reach out to support@stepsecurity.io');
+            if ((0, axios_1.isAxiosError)(err) && ((_b = err.response) === null || _b === void 0 ? void 0 : _b.status) === 403) {
+                core.error(`[1;31mThis action requires a StepSecurity subscription for private repositories.[0m`);
+                core.error(`[31mLearn how to enable a subscription: ${docsUrl}[0m`);
                 process.exit(1);
             }
-            else {
-                (0, core_1.info)('Timeout or API not reachable. Continuing to next step.');
-            }
+            core.info('Timeout or API not reachable. Continuing to next step.');
         }
     });
 }
