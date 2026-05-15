@@ -36,5 +36,5 @@ outputs:
   published:
     description: 'JSON formatted string with published crates as list of objects with `name` and `version` fields'
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'
