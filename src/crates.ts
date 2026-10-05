@@ -55,14 +55,11 @@ export async function getCrateVersions(
     if (!data) {
         return
     }
-    return data.versions.map(
-        ({num, created_at, dl_path}) =>
-            ({
-                version: num,
-                created: new Date(created_at),
-                dl_path
-            }) as Version
-    )
+    return data.versions.map(({num, created_at, dl_path}) => ({
+        version: num,
+        created: new Date(created_at),
+        dl_path
+    }))
 }
 
 export async function checkCrateAvailability(
